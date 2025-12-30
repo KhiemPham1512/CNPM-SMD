@@ -45,7 +45,7 @@
 ## Infrastructure Layer
 
 ## Download source code (CMD)
-  git clone https://github.com/ChienNguyensrdn/Flask-CleanArchitecture.git](https://github.com/KhiemPham1512/CNPM-SMD.git
+  git clone https://github.com/KhiemPham1512/CNPM-SMD.git
 ## Kiểm tra đã cài python đã cài đặt trên máy chưa
     python --version
 ## Run app
