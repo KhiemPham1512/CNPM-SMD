@@ -45,7 +45,7 @@
 ## Infrastructure Layer
 
 ## Download source code (CMD)
-    git clone https://github.com/ChienNguyensrdn/Flask-CleanArchitecture.git
+  git clone https://github.com/KhiemPham1512/CNPM-SMD.git
 ## Kiểm tra đã cài python đã cài đặt trên máy chưa
     python --version
 ## Run app
@@ -75,7 +75,6 @@
      Truy câp http://localhost:6868/docs
 
 
-
 ## Create file .env in folder /src/.env
     
     # Flask settings
@@ -99,7 +98,7 @@
     ```
 ## Install MS SQL server in docker 
     ```bash
-    docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=Aa123456" -p 1433:1433 --name sql1 --hostname sql1 -d  mcr.microsoft.com/mssql/server:2025-latest
+    docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=Aa@123456" -p 1433:1433 --name sql1 --hostname sql1 -d  mcr.microsoft.com/mssql/server:2025-latest
     ```
 ## Test connect SQL server 
 
