@@ -3,7 +3,7 @@ from infrastructure.databases.base import Base
 
 class TodoModel(Base):
     __tablename__ = 'todos'
-    __table_args__ = {'extend_existing': True}  # Thêm dòng này
+    __table_args__ = {'extend_existing': True}  
 
     id = Column(Integer, primary_key=True)
     title = Column(String(255), nullable=False)

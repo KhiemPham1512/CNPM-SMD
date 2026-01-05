@@ -3,7 +3,7 @@ from infrastructure.databases.base import Base
 
 class AppointmentModel(Base):
     __tablename__ = 'appointments'
-    __table_args__ = {'extend_existing': True}  # Thêm dòng này
+    __table_args__ = {'extend_existing': True}  
 
     id = Column(Integer, primary_key=True)
     consultant_id = Column(Integer, nullable=False)

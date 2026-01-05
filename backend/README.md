@@ -52,7 +52,7 @@
 
  - Bước 1: Tạo môi trường ảo co Python (phiên bản 3.x)
      ## Windows:
-     		py -m venv .venv
+     		python -m venv .venv
      ## Unix/MacOS:
      		python3 -m venv .venv
    - Bước 2: Kích hoạt môi trường:
@@ -65,7 +65,8 @@
      
    - Bước 3: Cài đặt các thư viện cần thiết
      ## Install:
-     		pip install -r requirements.txt
+     		cd src
+            pip install -r requirements.txt
    - Bước 4: Chạy mã xử lý dữ liệu
      ## Run:
     		python app.py
@@ -86,10 +87,10 @@
     DB_PASSWORD=Aa@123456
     DB_HOST=127.0.0.1
     DB_PORT=1433
-    DB_NAME=FlaskApiDB
+    DB_NAME=smd
     
     
-    DATABASE_URI = "mssql+pymssql://sa:Aa%40123456@127.0.0.1:1433/FlaskApiDB"
+    DATABASE_URI = "mssql+pymssql://sa:Aa%40123456@127.0.0.1:1433/smd"
 
 ## pull image MS SQL server 
     
