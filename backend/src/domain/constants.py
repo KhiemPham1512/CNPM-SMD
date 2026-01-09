@@ -1,10 +1,21 @@
-# Constants
+# Constants for SMD (Syllabus Management and Digitization System)
 
-# Define any constants used throughout the application here. 
-# For example, you might define API version, error messages, or configuration keys.
-
+# API Configuration
 API_VERSION = "v1"
 DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 
-# Add more constants as needed for your application.
+# Roles - Exactly 6 roles per SMD scope
+ROLE_ADMIN = 'ADMIN'
+ROLE_LECTURER = 'LECTURER'
+ROLE_HOD = 'HOD'
+ROLE_AA = 'AA'
+ROLE_PRINCIPAL = 'PRINCIPAL'
+ROLE_STUDENT = 'STUDENT'
+
+# Workflow States
+WORKFLOW_DRAFT = 'DRAFT'
+WORKFLOW_PENDING_REVIEW = 'PENDING_REVIEW'
+WORKFLOW_PENDING_APPROVAL = 'PENDING_APPROVAL'
+WORKFLOW_APPROVED = 'APPROVED'
+WORKFLOW_PUBLISHED = 'PUBLISHED'

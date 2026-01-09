@@ -108,3 +108,12 @@ Object Relational Mapping
 Ánh xạ 1 class (OOP)  model src/infrastructure/models --> Table in database 
 Ánh xạ các mối quan hệ (Relational) -- Khoá ngoại CSDL 
 (n-n): many to many 
+
+
+## tắt venv
+deactivate
+
+## tạo nhanh vào database dữ liệu
+cd backend/src
+python -m scripts.reset_db
+python -m scripts.seed_8_each

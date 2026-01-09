@@ -1,0 +1,91 @@
+### SMD Backend Smoke Tests
+### Use with REST Client extension in VS Code or similar tool
+### Or use curl/PowerShell commands below
+
+@baseUrl = http://127.0.0.1:9999
+@token = YOUR_TOKEN_HERE
+
+### 1. Login as Admin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### 2. Get Current User (me)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### 3. List All Users (Admin)
+GET {{baseUrl}}/users
+Authorization: Bearer {{token}}
+
+### 4. Create User (Admin)
+POST {{baseUrl}}/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "test123",
+  "full_name": "Test User",
+  "email": "test@university.edu",
+  "status": "active"
+}
+
+### 5. Assign Role to User (Admin)
+POST {{baseUrl}}/users/1005/roles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "role_name": "STUDENT"
+}
+
+### 6. List All Syllabi (Authenticated)
+GET {{baseUrl}}/syllabi
+Authorization: Bearer {{token}}
+
+### 7. Create Syllabus Draft (Lecturer)
+POST {{baseUrl}}/syllabi
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "subject_id": 1,
+  "program_id": 1,
+  "owner_lecturer_id": 1002
+}
+
+### 8. Submit Syllabus for Review (Lecturer)
+POST {{baseUrl}}/syllabi/1/submit
+Authorization: Bearer {{token}}
+
+### 9. HOD Approve Syllabus
+POST {{baseUrl}}/syllabi/1/hod/approve
+Authorization: Bearer {{token}}
+
+### 10. AA Approve Syllabus
+POST {{baseUrl}}/syllabi/1/aa/approve
+Authorization: Bearer {{token}}
+
+### 11. Publish Syllabus (Admin/Principal)
+POST {{baseUrl}}/syllabi/1/publish
+Authorization: Bearer {{token}}
+
+### 12. List Published Syllabi (Public - No Auth)
+GET {{baseUrl}}/syllabi/public
+
+### 13. Get Published Syllabus (Public - No Auth)
+GET {{baseUrl}}/syllabi/public/1
+
+### 14. Test RBAC - Try to access admin endpoint as lecturer
+POST {{baseUrl}}/users/1005/roles
+Authorization: Bearer {{lecturer_token}}
+Content-Type: application/json
+
+{
+  "role_name": "STUDENT"
+}

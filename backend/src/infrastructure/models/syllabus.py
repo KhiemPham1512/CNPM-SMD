@@ -18,8 +18,10 @@ class Syllabus(Base):
     subject = relationship('Subject', back_populates='syllabi')
     program = relationship('Program', back_populates='syllabi')
     owner = relationship('User', foreign_keys=[owner_lecturer_id], back_populates='syllabus_owner')
-    current_version = relationship('SyllabusVersion', foreign_keys=[current_version_id], post_update=True)
-    versions = relationship('SyllabusVersion', back_populates='syllabus')
+    # current_version: one-to-one via current_version_id FK (nullable, post_update to handle circular ref)
+    current_version = relationship('SyllabusVersion', foreign_keys=[current_version_id], post_update=True, uselist=False)
+    # versions: one-to-many via SyllabusVersion.syllabus_id FK (explicit primaryjoin to avoid ambiguity with current_version)
+    versions = relationship('SyllabusVersion', primaryjoin='Syllabus.syllabus_id == SyllabusVersion.syllabus_id', back_populates='syllabus')
     subscriptions = relationship('Subscription', back_populates='syllabus')
     feedbacks = relationship('Feedback', back_populates='syllabus')
 

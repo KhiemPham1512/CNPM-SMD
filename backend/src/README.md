@@ -5,13 +5,13 @@ This project is structured using the Clean Architecture principles, which promot
 ## Directory Structure
 
 - **migrations/**: Contains database migration files.
-- **scripts/**: Contains scripts for running and managing the application, such as `run_postgres.sh` for PostgreSQL.
+- **scripts/**: Contains scripts for database seeding and management.
 - **api/**: Contains the API-related components.
   - **controllers/**: Controllers for handling API requests.
   - **schemas/**: Marshmallow schemas for data validation and serialization.
   - **middleware.py**: Middleware functions for processing requests and responses.
   - **responses.py**: Functions for handling API responses.
-  - **requests.py**: Functions for handling API requests.
+  - **utils/**: Utility functions (authz, db session management).
 - **infrastructure/**: Contains components that interact with external systems.
   - **services/**: Services that use third-party libraries or services (e.g., email service).
   - **databases/**: Database adapters and initialization code.
@@ -25,10 +25,7 @@ This project is structured using the Clean Architecture principles, which promot
 - **app.py**: The main entry point of the application, initializing the app and setting up routes.
 - **config.py**: Configuration settings for the application.
 - **cors.py**: Handles Cross-Origin Resource Sharing (CORS) settings.
-- **create_app.py**: Factory function to create the Flask application instance.
 - **dependency_container.py**: Manages dependency injection for the application.
-- **error_handler.py**: Defines error handling logic for the application.
-- **logging.py**: Sets up logging configurations for the application.
 
 ## Getting Started
 

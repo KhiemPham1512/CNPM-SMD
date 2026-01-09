@@ -1,14 +1,68 @@
-# Dependency Injection Container
+"""
+Dependency Injection Container
 
-from dependency_injector import containers, providers
+Lightweight DI container for service and repository instantiation.
+No external DI framework required.
+"""
+from infrastructure.repositories.user_repository import UserRepository
+from infrastructure.repositories.syllabus_repository import SyllabusRepository
+from infrastructure.services.password_hasher import WerkzeugPasswordHasher
+from services.user_service import UserService
+from services.syllabus_service import SyllabusService
+from sqlalchemy.orm import Session
 
-# Import your services and repositories here
-# from infrastructure.repositories import SomeRepository
-# from infrastructure.services import SomeService
 
-class Container(containers.DeclarativeContainer):
-    # Define your providers here
-    # some_repository = providers.Factory(SomeRepository)
-    # some_service = providers.Factory(SomeService, repository=some_repository)
+def get_session_local():
+    """
+    Get SessionLocal factory. Must be called after init_mssql() has been called.
+    """
+    from infrastructure.databases.mssql import SessionLocal
+    if SessionLocal is None:
+        raise RuntimeError("Database not initialized. Call init_mssql() first.")
+    return SessionLocal
 
-    pass  # This file is intentionally left blank for now.
+
+class Container:
+    """Dependency injection container."""
+    
+    def __init__(self):
+        # Create password hasher instance (stateless, can be singleton)
+        self._password_hasher = WerkzeugPasswordHasher()
+    
+    def user_service(self, db: Session) -> UserService:
+        """
+        Create UserService with dependencies.
+        
+        Args:
+            db: Database session (required for all operations)
+        
+        Returns:
+            UserService instance with session injected
+        """
+        if db is None:
+            raise ValueError("Database session is required for UserService")
+        user_repository = UserRepository(db)
+        return UserService(user_repository, self._password_hasher, session=db)
+    
+    def syllabus_service(self, db: Session) -> SyllabusService:
+        """
+        Create SyllabusService with dependencies.
+        
+        Args:
+            db: Database session (required for all operations)
+        
+        Returns:
+            SyllabusService instance with session injected
+        """
+        if db is None:
+            raise ValueError("Database session is required for SyllabusService")
+        syllabus_repository = SyllabusRepository(db)
+        return SyllabusService(syllabus_repository, session=db)
+    
+    def password_hasher(self):
+        """Get password hasher instance."""
+        return self._password_hasher
+
+
+# Global container instance
+container = Container()
