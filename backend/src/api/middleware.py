@@ -3,6 +3,7 @@
 import logging
 
 from flask import jsonify, request
+from api.responses import error_response, not_found_response
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +29,11 @@ def middleware(app):
     """Register middleware functions with Flask app."""
     @app.before_request
     def before_request():
-        # Skip logging for Swagger endpoints to reduce noise
+        # Skip logging for Swagger endpoints and OPTIONS preflight requests to reduce noise
         if request.path in ['/swagger.json', '/docs', '/docs/'] or request.path.startswith('/docs/'):
+            return
+        # Skip logging for OPTIONS requests (CORS preflight) - Flask-CORS handles these
+        if request.method == 'OPTIONS':
             return
         log_request_info(app)
 
@@ -43,17 +47,17 @@ def middleware(app):
     def handle_internal_error(error):
         """Handle internal server errors."""
         logger.error(f"Internal server error: {error}", exc_info=True)
-        return jsonify({'error': 'Internal server error'}), 500
+        return error_response('Internal server error', 500)
 
     @app.errorhandler(404)
     def handle_not_found(error):
         """Handle 404 errors."""
-        return jsonify({'error': 'Resource not found'}), 404
+        return not_found_response('Resource not found')
 
     @app.errorhandler(405)
     def handle_method_not_allowed(error):
         """Handle 405 Method Not Allowed errors."""
-        return jsonify({'error': 'Method not allowed'}), 405
+        return error_response('Method not allowed', 405)
 
     @app.route('/options', methods=['OPTIONS'])
     def options_route():

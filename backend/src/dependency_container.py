@@ -6,9 +6,11 @@ No external DI framework required.
 """
 from infrastructure.repositories.user_repository import UserRepository
 from infrastructure.repositories.syllabus_repository import SyllabusRepository
+from infrastructure.repositories.file_repository import FileRepository
 from infrastructure.services.password_hasher import WerkzeugPasswordHasher
 from services.user_service import UserService
 from services.syllabus_service import SyllabusService
+from services.file_service import FileService
 from sqlalchemy.orm import Session
 
 
@@ -62,6 +64,26 @@ class Container:
     def password_hasher(self):
         """Get password hasher instance."""
         return self._password_hasher
+    
+    def file_service(self, db: Session) -> FileService:
+        """
+        Create FileService with dependencies.
+        
+        Args:
+            db: Database session (required for all operations)
+        
+        Returns:
+            FileService instance with session injected
+        """
+        if db is None:
+            raise ValueError("Database session is required for FileService")
+        
+        # Import here to avoid circular dependencies and ensure Supabase config is loaded
+        from infrastructure.services.supabase_storage import get_supabase_storage_service
+        
+        file_repository = FileRepository(db)
+        storage_service = get_supabase_storage_service()
+        return FileService(file_repository, storage_service, session=db)
 
 
 # Global container instance

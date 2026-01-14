@@ -4,7 +4,7 @@ from marshmallow import Schema, fields
 class SyllabusCreateSchema(Schema):
     subject_id = fields.Int(required=True)
     program_id = fields.Int(required=True)
-    owner_lecturer_id = fields.Int(required=True)
+    # owner_lecturer_id is NOT in schema - it's taken from JWT token
 
 
 class SyllabusUpdateSchema(Schema):

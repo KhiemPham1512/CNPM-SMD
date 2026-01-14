@@ -27,6 +27,7 @@ class User(Base):
     feedbacks = relationship('Feedback', back_populates='author')
     system_settings = relationship('SystemSetting', back_populates='updater')
     audit_logs = relationship('AuditLog', back_populates='actor')
+    uploaded_files = relationship('FileAsset', back_populates='uploader')
 
     def __repr__(self):
         return f"<User(user_id='{self.user_id}', username='{self.username}')>"

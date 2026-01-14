@@ -52,6 +52,28 @@ class SyllabusRepository(ISyllabusRepository):
         except Exception as e:
             logger.exception(f"Failed to list syllabi: {e}")
             raise  # Re-raise original exception
+    
+    def list_by_owner(self, owner_lecturer_id: int) -> List[Syllabus]:
+        """List all syllabi owned by a specific lecturer. Read-only operation."""
+        try:
+            syllabus_models = self.session.query(SyllabusModel).filter_by(
+                owner_lecturer_id=owner_lecturer_id
+            ).all()
+            return [self._to_domain(syllabus_model) for syllabus_model in syllabus_models]
+        except Exception as e:
+            logger.exception(f"Failed to list syllabi by owner {owner_lecturer_id}: {e}")
+            raise  # Re-raise original exception
+    
+    def list_by_status(self, status: str) -> List[Syllabus]:
+        """List all syllabi with a specific lifecycle status. Read-only operation."""
+        try:
+            syllabus_models = self.session.query(SyllabusModel).filter_by(
+                lifecycle_status=status
+            ).all()
+            return [self._to_domain(syllabus_model) for syllabus_model in syllabus_models]
+        except Exception as e:
+            logger.exception(f"Failed to list syllabi by status {status}: {e}")
+            raise  # Re-raise original exception
 
     def update(self, syllabus: Syllabus) -> Syllabus:
         """Update syllabus in session. Does NOT commit - transaction managed by service layer."""

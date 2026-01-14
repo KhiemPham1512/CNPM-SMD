@@ -125,6 +125,7 @@ def get_user(user_id: int) -> Tuple[Response, int]:
 
 @bp.route('/', methods=['POST'])
 @token_required
+@role_required('ADMIN')
 def create_user() -> Tuple[Response, int]:
     """
     Create a new user
@@ -200,6 +201,7 @@ def create_user() -> Tuple[Response, int]:
 
 @bp.route('/<int:user_id>/status', methods=['PUT'])
 @token_required
+@role_required('ADMIN')
 def update_user_status(user_id: int) -> Tuple[Response, int]:
     """
     Update user status
@@ -313,6 +315,67 @@ def delete_user(user_id: int) -> Tuple[Response, int]:
         if 'connection' in error_str or 'unavailable' in error_str or 'timeout' in error_str:
             return error_response('Database service temporarily unavailable', 503)
         return error_response('Failed to delete user', 500)
+
+
+@bp.route('/<int:user_id>/roles', methods=['GET'])
+@token_required
+@role_required('ADMIN')
+def get_user_roles(user_id: int) -> Tuple[Response, int]:
+    """
+    Get user roles
+    ---
+    get:
+      summary: Get roles for a user (Admin only)
+      security:
+        - Bearer: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the user
+      tags:
+        - Users
+      responses:
+        200:
+          description: User roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: string
+                    example: ["ADMIN", "LECTURER"]
+                  message:
+                    type: string
+                    example: "User roles retrieved successfully"
+        404:
+          description: User not found
+        401:
+          description: Unauthorized
+        403:
+          description: Insufficient permissions (Admin required)
+    """
+    db = get_db_session()
+    try:
+        user_service = container.user_service(db)
+        roles = user_service.get_user_roles(user_id)
+        return success_response(data=roles, message='User roles retrieved successfully')
+    except ValueError as e:
+        error_msg = str(e)
+        if 'not found' in error_msg.lower():
+            return not_found_response(error_msg)
+        return error_response(error_msg, 400)
+    except Exception as e:
+        logger.exception(f"Error getting roles for user {user_id}: {e}")
+        return error_response('Failed to retrieve user roles', 500)
 
 
 @bp.route('/<int:user_id>/roles', methods=['POST'])

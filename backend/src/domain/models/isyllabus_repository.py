@@ -15,6 +15,16 @@ class ISyllabusRepository(ABC):
     @abstractmethod
     def list(self) -> List[Syllabus]:
         pass
+    
+    @abstractmethod
+    def list_by_owner(self, owner_lecturer_id: int) -> List[Syllabus]:
+        """List all syllabi owned by a specific lecturer."""
+        pass
+    
+    @abstractmethod
+    def list_by_status(self, status: str) -> List[Syllabus]:
+        """List all syllabi with a specific lifecycle status."""
+        pass
 
     @abstractmethod
     def update(self, syllabus: Syllabus) -> Syllabus:

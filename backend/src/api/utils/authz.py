@@ -85,6 +85,11 @@ def token_required(f):
     """
     @wraps(f)
     def decorated(*args, **kwargs):
+        # Skip token validation for OPTIONS requests (CORS preflight)
+        # Flask-CORS handles these automatically
+        if request.method == 'OPTIONS':
+            return f(*args, **kwargs)
+        
         token = None
         
         # Debug: Log all headers in DEBUG mode
@@ -273,10 +278,15 @@ def role_required(*allowed_roles: str):
                 
                 if not has_required_role:
                     # User lacks required role - this is expected, return 403
-                    return error_response(
-                        f'Insufficient permissions. Required roles: {", ".join(allowed_roles)}',
-                        403
-                    )
+                    # In production, use generic message to avoid information disclosure
+                    is_debug = current_app.config.get('DEBUG', False)
+                    if is_debug:
+                        # Development: show detailed message
+                        error_msg = f'Insufficient permissions. Required roles: {", ".join(allowed_roles)}'
+                    else:
+                        # Production: generic message
+                        error_msg = 'Access denied. You do not have permission to perform this action.'
+                    return error_response(error_msg, 403)
                 
                 # User has required role - set roles on request for potential use in endpoint
                 request.current_user_roles = get_user_roles(user_id, db)

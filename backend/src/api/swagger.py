@@ -41,7 +41,12 @@ UserUpdateStatus = Model('UserUpdateStatus', {
 SyllabusCreate = Model('SyllabusCreate', {
     'subject_id': Integer(required=True, description='Subject ID'),
     'program_id': Integer(required=True, description='Program ID'),
-    'owner_lecturer_id': Integer(required=True, description='Owner lecturer ID'),
+    # owner_lecturer_id is NOT in request - it's taken from JWT token
+})
+
+SyllabusCreateResponse = Model('SyllabusCreateResponse', {
+    'syllabus_id': Integer(required=True, description='Syllabus ID'),
+    'draft_version_id': Integer(required=True, description='Draft version ID created with the syllabus'),
 })
 
 SyllabusUpdate = Model('SyllabusUpdate', {
@@ -58,6 +63,26 @@ SyllabusResponse = Model('SyllabusResponse', {
     'current_version_id': Integer(required=False, description='Current version ID', allow_none=True),
     'lifecycle_status': String(required=True, description='Lifecycle status'),
     'created_at': Raw(required=True, description='Creation timestamp'),
+})
+
+# File Models
+FileUploadResponse = Model('FileUploadResponse', {
+    'file_id': Integer(required=True, description='File ID'),
+    'syllabus_version_id': Integer(required=True, description='Syllabus version ID'),
+    'original_filename': String(required=True, description='Original filename'),
+    'bucket': String(required=True, description='Supabase bucket name'),
+    'object_path': String(required=True, description='Path in Supabase Storage'),
+    'mime_type': String(required=True, description='MIME type'),
+    'size_bytes': Integer(required=True, description='File size in bytes'),
+    'uploaded_by': Integer(required=True, description='User ID who uploaded the file'),
+    'created_at': Raw(required=True, description='Upload timestamp'),
+})
+
+FileSignedUrlResponse = Model('FileSignedUrlResponse', {
+    'file_id': Integer(required=True, description='File ID'),
+    'signed_url': String(required=True, description='Signed URL for file download'),
+    'expires_in': Integer(required=True, description='URL expiration time in seconds'),
+    'object_path': String(required=True, description='Path in Supabase Storage'),
 })
 
 # Convert Flask-RESTX field to OpenAPI 3 schema
@@ -155,8 +180,11 @@ register_restx_model(spec, "UserRequest", UserRequest)
 register_restx_model(spec, "UserResponse", UserResponse)
 register_restx_model(spec, "UserUpdateStatus", UserUpdateStatus)
 register_restx_model(spec, "SyllabusCreate", SyllabusCreate)
+register_restx_model(spec, "SyllabusCreateResponse", SyllabusCreateResponse)
 register_restx_model(spec, "SyllabusUpdate", SyllabusUpdate)
 register_restx_model(spec, "SyllabusResponse", SyllabusResponse)
+register_restx_model(spec, "FileUploadResponse", FileUploadResponse)
+register_restx_model(spec, "FileSignedUrlResponse", FileSignedUrlResponse)
 
 # Security scheme for JWT
 # OpenAPI 3.0 HTTP Bearer scheme - Swagger UI will automatically add "Bearer " prefix

@@ -1,7 +1,28 @@
 # Configuration settings for the Flask application
 
 import os
+import logging
+from pathlib import Path
 import warnings
+from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
+
+# Load .env file from backend/ directory (project root)
+# This ensures DATABASE_URI and other env vars are loaded before Config class is used
+# Note: app.py also loads .env, but we load here too for scripts that import config directly
+BASE_DIR = Path(__file__).resolve().parent  # backend/src/
+ENV_PATH = BASE_DIR.parent / ".env"  # backend/.env
+ENV_PATH_FALLBACK = BASE_DIR / ".env"  # backend/src/.env
+
+# Try backend/.env first, then backend/src/.env, then default load_dotenv()
+if ENV_PATH.exists():
+    load_dotenv(dotenv_path=ENV_PATH, override=True)
+elif ENV_PATH_FALLBACK.exists():
+    load_dotenv(dotenv_path=ENV_PATH_FALLBACK, override=True)
+else:
+    # Fallback to default behavior (current directory)
+    load_dotenv()
 
 
 class Config:
@@ -15,6 +36,26 @@ class Config:
     # CORS configuration - will be overridden by child classes
     CORS_ORIGINS = ['*']  # Default, should be overridden in production
     CORS_ALLOW_HEADERS = ['Content-Type', 'Authorization', 'X-Requested-With']
+    
+    # Supabase Storage configuration
+    # Only required if FILE_STORAGE_ENABLED=true
+    FILE_STORAGE_ENABLED = os.environ.get('FILE_STORAGE_ENABLED', 'False').lower() in ['true', '1']
+    SUPABASE_URL = os.environ.get('SUPABASE_URL')
+    SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
+    SUPABASE_BUCKET = os.environ.get('SUPABASE_BUCKET', 'syllabus-files')
+    
+    # Parse SUPABASE_SIGNED_URL_EXPIRES_IN safely (fallback to 3600 if invalid)
+    try:
+        SUPABASE_SIGNED_URL_EXPIRES_IN = int(os.environ.get('SUPABASE_SIGNED_URL_EXPIRES_IN', '3600'))
+    except (ValueError, TypeError):
+        warnings.warn(
+            "Invalid SUPABASE_SIGNED_URL_EXPIRES_IN value, using default 3600 seconds",
+            UserWarning
+        )
+        SUPABASE_SIGNED_URL_EXPIRES_IN = 3600
+    
+    # File upload size limit (in MB, default 20MB)
+    MAX_UPLOAD_MB = int(os.environ.get('MAX_UPLOAD_MB', '20'))
     
     @staticmethod
     def _validate_secret_key():
@@ -46,7 +87,14 @@ class DevelopmentConfig(Config):
     # For local development, set DATABASE_URI in .env file
     DATABASE_URI = os.environ.get('DATABASE_URI')
     # Allow all origins in development
-    CORS_ORIGINS = ['http://localhost:9999', 'http://127.0.0.1:9999', 'http://localhost:3000', 'http://127.0.0.1:3000']
+    CORS_ORIGINS = [
+        'http://localhost:9999', 
+        'http://127.0.0.1:9999', 
+        'http://localhost:3000', 
+        'http://127.0.0.1:3000',
+        'http://localhost:3002',  # Vite may use this port if 3000 is occupied
+        'http://127.0.0.1:3002'
+    ]
     
     @staticmethod
     def _validate_database_uri():
@@ -156,6 +204,25 @@ def get_config():
     if config_class == ProductionConfig:
         # DATABASE_URI already validated above
         config_class.CORS_ORIGINS = config_class._validate_cors_origins()
+    
+    # Validate Supabase config if file storage is enabled
+    if config_class.FILE_STORAGE_ENABLED:
+        missing_vars = []
+        if not config_class.SUPABASE_URL:
+            missing_vars.append("SUPABASE_URL")
+        if not config_class.SUPABASE_SERVICE_ROLE_KEY:
+            missing_vars.append("SUPABASE_SERVICE_ROLE_KEY")
+        if not config_class.SUPABASE_BUCKET:
+            missing_vars.append("SUPABASE_BUCKET")
+        
+        if missing_vars:
+            raise ValueError(
+                f"FILE_STORAGE_ENABLED is True but required environment variables are missing: {', '.join(missing_vars)}. "
+                f"Set these variables in your .env file or disable file storage by setting FILE_STORAGE_ENABLED=false."
+            )
+        
+        logger = logging.getLogger(__name__)
+        logger.info(f"File storage enabled: bucket={config_class.SUPABASE_BUCKET}, max_upload={config_class.MAX_UPLOAD_MB}MB")
     
     return config_class
 

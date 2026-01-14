@@ -29,6 +29,7 @@ class SyllabusVersion(Base):
     ai_jobs = relationship('AiJob', back_populates='version')
     ai_summaries = relationship('AiSummary', back_populates='version')
     feedbacks = relationship('Feedback', back_populates='version')
+    file_assets = relationship('FileAsset', back_populates='version')
 
     def __repr__(self):
         return f"<SyllabusVersion(version_id='{self.version_id}', syllabus_id='{self.syllabus_id}', version_no={self.version_no})>"

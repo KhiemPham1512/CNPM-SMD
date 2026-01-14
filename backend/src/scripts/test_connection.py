@@ -16,6 +16,14 @@ _src_dir = _script_dir.parent
 if str(_src_dir) not in sys.path:
     sys.path.insert(0, str(_src_dir))
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+env_path = _src_dir / '.env'
+if not env_path.exists():
+    # Try parent directory (backend/)
+    env_path = _src_dir.parent / '.env'
+load_dotenv(dotenv_path=env_path if env_path.exists() else None)
+
 from config import Config
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError, ProgrammingError
@@ -28,7 +36,52 @@ def test_connection():
     print()
     
     database_uri = Config.DATABASE_URI
-    print(f"Connection URI: {database_uri.replace(Config.DATABASE_URI.split('@')[0].split('//')[1] if '@' in Config.DATABASE_URI else '', '***')}")
+    if not database_uri:
+        import os
+        database_uri = os.environ.get('DATABASE_URI')
+        if not database_uri:
+            print("=" * 60)
+            print("✗ DATABASE_URI is not set")
+            print("=" * 60)
+            print()
+            print("Please set DATABASE_URI in your .env file or environment variable.")
+            print()
+            print("Example .env file (in backend/src/):")
+            print("  DATABASE_URI=mssql+pymssql://sa:Aa%40123456@127.0.0.1:1433/smd")
+            print()
+            print("Note: URL encode special characters in password (e.g., @ becomes %40)")
+            return False
+    
+    # Mask password in connection string for display
+    try:
+        if '@' in database_uri:
+            # Mask password: mssql+pymssql://user:password@host -> mssql+pymssql://user:***@host
+            parts = database_uri.split('@')
+            if len(parts) == 2:
+                auth_part = parts[0]
+                if '://' in auth_part:
+                    scheme_user = auth_part.split('://')
+                    if len(scheme_user) == 2:
+                        scheme = scheme_user[0] + '://'
+                        user_pass = scheme_user[1]
+                        if ':' in user_pass:
+                            user = user_pass.split(':')[0]
+                            masked_uri = f"{scheme}{user}:***@{parts[1]}"
+                        else:
+                            masked_uri = f"{auth_part}:***@{parts[1]}"
+                    else:
+                        masked_uri = database_uri.replace('://', '://***@', 1) if '://' in database_uri else database_uri
+                else:
+                    masked_uri = database_uri
+            else:
+                masked_uri = database_uri
+        else:
+            masked_uri = database_uri
+    except Exception:
+        # If masking fails, just show a generic message
+        masked_uri = "mssql+pymssql://***:***@***:***/***"
+    
+    print(f"Connection URI: {masked_uri}")
     print()
     
     try:

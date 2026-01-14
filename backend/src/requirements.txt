@@ -4,6 +4,7 @@ Flask-SQLAlchemy>=2.5
 SQLAlchemy>=1.4
 marshmallow>=3.0,<4
 pymssql>=2.2
+psycopg2-binary>=2.9.0
 python-dotenv>=0.21
 
 Flask-RESTX>=1.1.0
@@ -13,3 +14,4 @@ apispec_webframeworks
 
 PyJWT>=2.8
 PyYAML>=6.0
+supabase>=2.0.0

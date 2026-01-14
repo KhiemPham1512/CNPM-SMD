@@ -24,3 +24,16 @@ class UserResponseSchema(Schema):
 class UserUpdateStatusSchema(Schema):
     status = fields.Str(required=True)
 
+
+class RoleAssignmentSchema(Schema):
+    """Schema for assigning roles to a user."""
+    roles = fields.List(
+        fields.Str(required=True),
+        required=True,
+        validate=lambda roles: all(r.upper() in ['ADMIN', 'LECTURER', 'HOD', 'AA', 'PRINCIPAL', 'STUDENT'] for r in roles),
+        error_messages={
+            'required': 'roles array is required',
+            'invalid': 'All roles must be one of: ADMIN, LECTURER, HOD, AA, PRINCIPAL, STUDENT'
+        }
+    )
+

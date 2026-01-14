@@ -167,6 +167,60 @@ class UserService:
             logger.exception(f"Failed to assign role {role_name} to user {user_id}: {e}")
             raise
 
+    def assign_roles(self, user_id: int, role_names: List[str]) -> User:
+        """
+        Assign multiple roles to a user (replaces existing roles).
+        Transaction is managed by this service method.
+        
+        Args:
+            user_id: User ID
+            role_names: List of role names to assign
+        
+        Returns:
+            Updated User object
+        
+        Raises:
+            ValueError: If user not found or any role not found
+        """
+        from infrastructure.models.role import Role
+        from infrastructure.models.user_role import UserRole
+        
+        try:
+            # Validate user exists
+            user = self.repository.get_by_id(user_id)
+            if not user:
+                raise ValueError('User not found')
+            
+            # Validate all roles exist BEFORE deleting existing roles (transaction safety)
+            validated_roles = []
+            for role_name in role_names:
+                role = self.session.query(Role).filter_by(role_name=role_name).first()
+                if not role:
+                    raise ValueError(f'Role not found: {role_name}')
+                validated_roles.append(role)
+            
+            # Only after all roles are validated, proceed with delete + insert
+            # Remove all existing roles first
+            existing_roles = self.session.query(UserRole).filter_by(user_id=user_id).all()
+            for user_role in existing_roles:
+                self.session.delete(user_role)
+            
+            # Assign new roles (all validated)
+            for role in validated_roles:
+                user_role = UserRole(user_id=user_id, role_id=role.role_id)
+                self.session.add(user_role)
+            
+            self.session.commit()
+            logger.info(f"Roles {role_names} assigned to user {user_id}")
+            return self.repository.get_by_id(user_id)
+        except ValueError:
+            self.session.rollback()
+            raise
+        except Exception as e:
+            self.session.rollback()
+            logger.exception(f"Failed to assign roles to user {user_id}: {e}")
+            raise
+
     def remove_role(self, user_id: int, role_name: str) -> User:
         """
         Remove a role from a user. Transaction is managed by this service method.

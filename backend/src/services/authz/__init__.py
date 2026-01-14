@@ -1,0 +1,1 @@
+# Authorization policies for SMD
